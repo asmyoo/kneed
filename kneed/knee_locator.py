@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import interpolate
 from scipy.signal import argrelextrema
+from scipy.signal import savgol_filter
 import warnings
 from typing import Tuple, Optional, Iterable
 
@@ -166,6 +167,8 @@ class KneeLocator(object):
         elif interp_method == "polynomial":
             p = np.poly1d(np.polyfit(x, y, self.polynomial_degree))
             self.Ds_y = p(x)
+            # y_new = savgol_filter(self.y, len(self.y), self.polynomial_degree)
+            # self.Ds_y = y_new
         else:
             raise ValueError(
                 "{} is an invalid interp_method parameter, use either 'interp1d' or 'polynomial'".format(
@@ -187,12 +190,14 @@ class KneeLocator(object):
 
         # Step 4: Identify local maxima/minima
         # local maxima
-        self.maxima_indices = argrelextrema(self.y_difference, np.greater_equal)[0]
+        self.maxima_indices = argrelextrema(
+            self.y_difference, np.greater_equal)[0]
         self.x_difference_maxima = self.x_difference[self.maxima_indices]
         self.y_difference_maxima = self.y_difference[self.maxima_indices]
 
         # local minima
-        self.minima_indices = argrelextrema(self.y_difference, np.less_equal)[0]
+        self.minima_indices = argrelextrema(
+            self.y_difference, np.less_equal)[0]
         self.x_difference_minima = self.x_difference[self.minima_indices]
         self.y_difference_minima = self.y_difference[self.minima_indices]
 
@@ -208,7 +213,8 @@ class KneeLocator(object):
         self.knee_y = self.norm_knee_y = None
         if self.knee:
             self.knee_y = self.y[self.x == self.knee][0]
-            self.norm_knee_y = self.y_normalized[self.x_normalized == self.norm_knee][0]
+            self.norm_knee_y = self.y_normalized[self.x_normalized ==
+                                                 self.norm_knee][0]
 
     @staticmethod
     def __normalize(a: Iterable[float]) -> Iterable[float]:
@@ -320,13 +326,17 @@ class KneeLocator(object):
 
         plt.figure(figsize=figsize)
         plt.title("Normalized Knee Point")
-        plt.plot(self.x_normalized, self.y_normalized, "b", label="normalized curve")
-        plt.plot(self.x_difference, self.y_difference, "r", label="difference curve")
+        plt.plot(self.x_normalized, self.y_normalized,
+                 "b", label="normalized curve")
+        plt.plot(self.x_difference, self.y_difference,
+                 "r", label="difference curve")
         plt.xticks(
-            np.arange(self.x_normalized.min(), self.x_normalized.max() + 0.1, 0.1)
+            np.arange(self.x_normalized.min(),
+                      self.x_normalized.max() + 0.1, 0.1)
         )
         plt.yticks(
-            np.arange(self.y_difference.min(), self.y_normalized.max() + 0.1, 0.1)
+            np.arange(self.y_difference.min(),
+                      self.y_normalized.max() + 0.1, 0.1)
         )
 
         plt.vlines(
