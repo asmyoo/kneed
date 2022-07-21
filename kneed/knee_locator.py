@@ -271,7 +271,8 @@ class KneeLocator(object):
                 maxima_threshold_index += 1
             # values in difference curve are at or after a local minimum
             if (self.minima_indices == i).any():
-                threshold = 0.0
+                # threshold = 0.0
+                threshold = - np.inf
                 minima_threshold_index += 1
 
             if self.y_difference[j] < threshold:
@@ -290,6 +291,8 @@ class KneeLocator(object):
                     else:
                         knee = self.x[threshold_index]
                         norm_knee = self.x_normalized[threshold_index]
+                        # print(
+                        #     f"Knee at {knee}, y_diff = {self.y_difference[j]}, threshold = {threshold}")
 
                 # add the y value at the knee
                 y_at_knee = self.y[self.x == knee][0]
